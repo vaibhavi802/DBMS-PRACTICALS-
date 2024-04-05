@@ -1,0 +1,842 @@
+
+Name: VAIBHAVI PATIL 
+Roll No: 23
+Practical 5:Sharding Using MongoDB
+
+
+
+
+Windows PowerShell
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Install the latest PowerShell for new features and improvements! https://aka.ms/PSWindows
+
+PS C:\Users\Prachi Mistry> mongosh --port 27017
+Current Mongosh Log ID: 65f08255511cdfc9028e2e29
+Connecting to:          mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.1.4
+Using MongoDB:          6.0.13
+Using Mongosh:          2.1.4
+mongosh 2.1.5 is available for download: https://www.mongodb.com/try/download/shell
+
+For mongosh info see: https://docs.mongodb.com/mongodb-shell/
+
+------
+   The server generated these startup warnings when booting
+   2024-03-09T16:32:28.517+05:30: Access control is not enabled for the database. Read and write access to data and configuration is unrestricted
+------
+
+test> rs.initiate()
+MongoServerError[NoReplicationEnabled]: This node was not started with replication enabled.
+test> rs.initiate()
+{
+  info2: 'no configuration specified. Using a default configuration for the set',
+  me: 'localhost:27017',
+  ok: 1
+}
+rs0 [direct: other] test> rs.initiate({_id:"rs0",members:[{_id:0,host:"localhost:27017"},{_id:1,host:"localhost:27018"},{_id:2,host:"localhost:27019"}]})
+MongoServerError[AlreadyInitialized]: already initialized
+rs0 [direct: primary] test> rs.reinitiate({_id:"rs0",members:[{_id:0,host:"localhost:27017"},{_id:1,host:"localhost:27018"},{_id:2,host:"localhost:27019"}]})
+TypeError: rs.reinitiate is not a function
+rs0 [direct: primary] test> rs.reconfig({_id:"rs0",members:[{_id:0,host:"localhost:27017"},{_id:1,host:"localhost:27018"},{_id:2,host:"localhost:27019"}]})
+{
+  ok: 1,
+  '$clusterTime': {
+    clusterTime: Timestamp({ t: 1710261692, i: 1 }),
+    signature: {
+      hash: Binary.createFromBase64('AAAAAAAAAAAAAAAAAAAAAAAAAAA=', 0),
+      keyId: Long('0')
+    }
+  },
+  operationTime: Timestamp({ t: 1710261692, i: 1 })
+}
+rs0 [direct: primary] test> rs.status
+[Function: status] AsyncFunction {
+  apiVersions: [ 0, 0 ],
+  returnsPromise: true,
+  serverVersions: [ '0.0.0', '999.999.999' ],
+  topologies: [ 'ReplSet', 'Sharded', 'LoadBalanced', 'Standalone' ],
+  returnType: { type: 'unknown', attributes: {} },
+  deprecated: false,
+  platforms: [ 'Compass', 'Browser', 'CLI' ],
+  isDirectShellCommand: false,
+  acceptsRawInput: false,
+  shellCommandCompleter: undefined,
+  help: [Function (anonymous)] Help
+}
+rs0 [direct: primary] test> rs.status()
+{
+  set: 'rs0',
+  date: ISODate('2024-03-12T16:41:54.473Z'),
+  myState: 1,
+  term: Long('1'),
+  syncSourceHost: '',
+  syncSourceId: -1,
+  heartbeatIntervalMillis: Long('2000'),
+  majorityVoteCount: 2,
+  writeMajorityCount: 2,
+  votingMembersCount: 3,
+  writableVotingMembersCount: 3,
+  optimes: {
+    lastCommittedOpTime: { ts: Timestamp({ t: 1710261702, i: 1 }), t: Long('1') },
+    lastCommittedWallTime: ISODate('2024-03-12T16:41:42.245Z'),
+    readConcernMajorityOpTime: { ts: Timestamp({ t: 1710261702, i: 1 }), t: Long('1') },
+    appliedOpTime: { ts: Timestamp({ t: 1710261702, i: 1 }), t: Long('1') },
+    durableOpTime: { ts: Timestamp({ t: 1710261702, i: 1 }), t: Long('1') },
+    lastAppliedWallTime: ISODate('2024-03-12T16:41:42.245Z'),
+    lastDurableWallTime: ISODate('2024-03-12T16:41:42.245Z')
+  },
+  lastStableRecoveryTimestamp: Timestamp({ t: 1710261692, i: 1 }),
+  electionCandidateMetrics: {
+    lastElectionReason: 'electionTimeout',
+    lastElectionDate: ISODate('2024-03-12T16:28:36.540Z'),
+    electionTerm: Long('1'),
+    lastCommittedOpTimeAtElection: { ts: Timestamp({ t: 1710260916, i: 1 }), t: Long('-1') },
+    lastSeenOpTimeAtElection: { ts: Timestamp({ t: 1710260916, i: 1 }), t: Long('-1') },
+    numVotesNeeded: 1,
+    priorityAtElection: 1,
+    electionTimeoutMillis: Long('10000'),
+    newTermStartDate: ISODate('2024-03-12T16:28:36.594Z'),
+    wMajorityWriteAvailabilityDate: ISODate('2024-03-12T16:28:36.624Z')
+  },
+  members: [
+    {
+      _id: 0,
+      name: 'localhost:27017',
+      health: 1,
+      state: 1,
+      stateStr: 'PRIMARY',
+      uptime: 823,
+      optime: { ts: Timestamp({ t: 1710261702, i: 1 }), t: Long('1') },
+      optimeDate: ISODate('2024-03-12T16:41:42.000Z'),
+      lastAppliedWallTime: ISODate('2024-03-12T16:41:42.245Z'),
+      lastDurableWallTime: ISODate('2024-03-12T16:41:42.245Z'),
+      syncSourceHost: '',
+      syncSourceId: -1,
+      infoMessage: '',
+      electionTime: Timestamp({ t: 1710260916, i: 2 }),
+      electionDate: ISODate('2024-03-12T16:28:36.000Z'),
+      configVersion: 4,
+      configTerm: 1,
+      self: true,
+      lastHeartbeatMessage: ''
+    },
+    {
+      _id: 1,
+      name: 'localhost:27018',
+      health: 1,
+      state: 2,
+      stateStr: 'SECONDARY',
+      uptime: 22,
+      optime: { ts: Timestamp({ t: 1710261702, i: 1 }), t: Long('1') },
+      optimeDurable: { ts: Timestamp({ t: 1710261702, i: 1 }), t: Long('1') },
+      optimeDate: ISODate('2024-03-12T16:41:42.000Z'),
+      optimeDurableDate: ISODate('2024-03-12T16:41:42.000Z'),
+      lastAppliedWallTime: ISODate('2024-03-12T16:41:42.245Z'),
+      lastDurableWallTime: ISODate('2024-03-12T16:41:42.245Z'),
+      lastHeartbeat: ISODate('2024-03-12T16:41:54.267Z'),
+      lastHeartbeatRecv: ISODate('2024-03-12T16:41:54.277Z'),
+      pingMs: Long('0'),
+      lastHeartbeatMessage: '',
+      syncSourceHost: 'localhost:27017',
+      syncSourceId: 0,
+      infoMessage: '',
+      configVersion: 4,
+      configTerm: 1
+    },
+    {
+      _id: 2,
+      name: 'localhost:27019',
+      health: 1,
+      state: 2,
+      stateStr: 'SECONDARY',
+      uptime: 22,
+      optime: { ts: Timestamp({ t: 1710261702, i: 1 }), t: Long('1') },
+      optimeDurable: { ts: Timestamp({ t: 1710261702, i: 1 }), t: Long('1') },
+      optimeDate: ISODate('2024-03-12T16:41:42.000Z'),
+      optimeDurableDate: ISODate('2024-03-12T16:41:42.000Z'),
+      lastAppliedWallTime: ISODate('2024-03-12T16:41:42.245Z'),
+      lastDurableWallTime: ISODate('2024-03-12T16:41:42.245Z'),
+      lastHeartbeat: ISODate('2024-03-12T16:41:54.267Z'),
+      lastHeartbeatRecv: ISODate('2024-03-12T16:41:54.278Z'),
+      pingMs: Long('0'),
+      lastHeartbeatMessage: '',
+      syncSourceHost: 'localhost:27017',
+      syncSourceId: 0,
+      infoMessage: '',
+      configVersion: 4,
+      configTerm: 1
+    }
+  ],
+  ok: 1,
+  '$clusterTime': {
+    clusterTime: Timestamp({ t: 1710261702, i: 1 }),
+    signature: {
+      hash: Binary.createFromBase64('AAAAAAAAAAAAAAAAAAAAAAAAAAA=', 0),
+      keyId: Long('0')
+    }
+  },
+  operationTime: Timestamp({ t: 1710261702, i: 1 })
+}
+rs0 [direct: primary] test> show dbs
+admin    80.00 KiB
+config  240.00 KiB
+local     3.05 MiB
+prachi    1.02 MiB
+rs0 [direct: primary] test> use prachi
+switched to db prachi
+rs0 [direct: primary] prachi> db.prac.findOne()
+{
+  _id: ObjectId('65f084b4534055c262f71d4c'),
+  pincode: 110001,
+  Taluk: 'New Delhi',
+  Districtname: 'Central Delhi',
+  statename: 'DELHI'
+}
+rs0 [direct: primary] prachi> exit
+PS C:\Users\Prachi Mistry> mongosh --port 27018
+Current Mongosh Log ID: 65f0864a976748f7ea607f62
+Connecting to:          mongodb://127.0.0.1:27018/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.1.4
+Using MongoDB:          6.0.13
+Using Mongosh:          2.1.4
+mongosh 2.1.5 is available for download: https://www.mongodb.com/try/download/shell
+
+For mongosh info see: https://docs.mongodb.com/mongodb-shell/
+
+------
+   The server generated these startup warnings when booting
+   2024-03-12T21:58:23.314+05:30: Access control is not enabled for the database. Read and write access to data and configuration is unrestricted
+   2024-03-12T21:58:23.315+05:30: This server is bound to localhost. Remote systems will be unable to connect to this server. Start the server with --bind_ip <address> to specify which IP addresses it should serve responses from, or with --bind_ip_all to bind to all interfaces. If this behavior is desired, start the server with --bind_ip 127.0.0.1 to disable this warning
+------
+
+rs0 [direct: secondary] test> show dbs
+admin    80.00 KiB
+config  244.00 KiB
+local   436.00 KiB
+prachi  660.00 KiB
+rs0 [direct: secondary] test> use prachi
+switched to db prachi
+rs0 [direct: secondary] prachi> db.prac.findOne()
+MongoServerError[NotPrimaryNoSecondaryOk]: not primary - consider using db.getMongo().setReadPref() or readPreference in the connection string
+rs0 [direct: secondary] prachi> db.getMongo().setReadPref('secondary')
+
+rs0 [direct: secondary] prachi> use prachi
+already on db prachi
+rs0 [direct: secondary] prachi> db.prac.findOne()
+{
+  _id: ObjectId('65f084b4534055c262f71d4c'),
+  pincode: 110001,
+  Taluk: 'New Delhi',
+  Districtname: 'Central Delhi',
+  statename: 'DELHI'
+}
+rs0 [direct: secondary] prachi>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Install the latest PowerShell for new features and improvements! https://aka.ms/PSWindows
+
+PS C:\Users\Prachi Mistry> mongosh --port 27018
+Current Mongosh Log ID: 65f08a14d35dd5bea9e4a58e
+Connecting to:          mongodb://127.0.0.1:27018/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.1.4
+Using MongoDB:          6.0.13
+Using Mongosh:          2.1.4
+mongosh 2.1.5 is available for download: https://www.mongodb.com/try/download/shell
+
+For mongosh info see: https://docs.mongodb.com/mongodb-shell/
+
+------
+   The server generated these startup warnings when booting
+   2024-03-12T22:22:27.895+05:30: Access control is not enabled for the database. Read and write access to data and configuration is unrestricted
+   2024-03-12T22:22:27.895+05:30: This server is bound to localhost. Remote systems will be unable to connect to this server. Start the server with --bind_ip <address> to specify which IP addresses it should serve responses from, or with --bind_ip_all to bind to all interfaces. If this behavior is desired, start the server with --bind_ip 127.0.0.1 to disable this warning
+------
+
+test> rs.initiate({_id:'rs1',members:[{_id:0,host:'localhost:27018'},{_id:1,host:'localhost:27019'}]})
+{ ok: 1, lastCommittedOpTime: Timestamp({ t: 1710263113, i: 1 }) }
+rs1 [direct: secondary] test>
+
+
+
+PS C:\Users\Prachi Mistry> mongosh --port 27020
+Current Mongosh Log ID: 65f08b9e67fce9493cfa0aa7
+Connecting to:          mongodb://127.0.0.1:27020/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.1.4
+Using MongoDB:          6.0.13
+Using Mongosh:          2.1.4
+mongosh 2.1.5 is available for download: https://www.mongodb.com/try/download/shell
+
+For mongosh info see: https://docs.mongodb.com/mongodb-shell/
+
+------
+   The server generated these startup warnings when booting
+   2024-03-12T22:24:57.369+05:30: Access control is not enabled for the database. Read and write access to data and configuration is unrestricted
+   2024-03-12T22:24:57.369+05:30: This server is bound to localhost. Remote systems will be unable to connect to this server. Start the server with --bind_ip <address> to specify which IP addresses it should serve responses from, or with --bind_ip_all to bind to all interfaces. If this behavior is desired, start the server with --bind_ip 127.0.0.1 to disable this warning
+------
+
+test>  rs.initiate({_id:'rs2',members:[{_id:0,host:'localhost:27020'},{_id:1,host:'localhost:27021'}]})
+{ ok: 1 }
+rs2 [direct: other] test>
+
+
+
+
+
+
+
+PS C:\Users\Prachi Mistry> mongosh --port 27022
+Current Mongosh Log ID: 65f08bde8d475bf949791e04
+Connecting to:          mongodb://127.0.0.1:27022/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.1.4
+Using MongoDB:          6.0.13
+Using Mongosh:          2.1.4
+mongosh 2.1.5 is available for download: https://www.mongodb.com/try/download/shell
+
+For mongosh info see: https://docs.mongodb.com/mongodb-shell/
+
+------
+   The server generated these startup warnings when booting
+   2024-03-12T22:26:47.738+05:30: Access control is not enabled for the database. Read and write access to data and configuration is unrestricted
+   2024-03-12T22:26:47.739+05:30: This server is bound to localhost. Remote systems will be unable to connect to this server. Start the server with --bind_ip <address> to specify which IP addresses it should serve responses from, or with --bind_ip_all to bind to all interfaces. If this behavior is desired, start the server with --bind_ip 127.0.0.1 to disable this warning
+------
+
+test>  rs.initiate({_id:'rs3',members:[{_id:0,host:'localhost:27022'},{_id:1,host:'localhost:27023'}]})
+{ ok: 1 }
+rs3 [direct: secondary] test>
+
+
+
+
+PS C:\Users\Prachi Mistry> mongosh --port 27017
+Current Mongosh Log ID: 65f08c7359a67b708df8e252
+Connecting to:          mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.1.4
+Using MongoDB:          6.0.13
+Using Mongosh:          2.1.4
+mongosh 2.1.5 is available for download: https://www.mongodb.com/try/download/shell
+
+For mongosh info see: https://docs.mongodb.com/mongodb-shell/
+
+------
+   The server generated these startup warnings when booting
+   2024-03-12T22:39:53.007+05:30: Access control is not enabled for the database. Read and write access to data and configuration is unrestricted
+   2024-03-12T22:39:53.008+05:30: This server is bound to localhost. Remote systems will be unable to connect to this server. Start the server with --bind_ip <address> to specify which IP addresses it should serve responses from, or with --bind_ip_all to bind to all interfaces. If this behavior is desired, start the server with --bind_ip 127.0.0.1 to disable this warning
+------
+
+[direct: mongos] test> sh.addShard("rs2/localhost:27020,localhost:27021")
+{
+  shardAdded: 'rs2',
+  ok: 1,
+  '$clusterTime': {
+    clusterTime: Timestamp({ t: 1710263503, i: 4 }),
+    signature: {
+      hash: Binary.createFromBase64('AAAAAAAAAAAAAAAAAAAAAAAAAAA=', 0),
+      keyId: Long('0')
+    }
+  },
+  operationTime: Timestamp({ t: 1710263503, i: 4 })
+}
+[direct: mongos] test> sh.status()
+shardingVersion
+{ _id: 1, clusterId: ObjectId('65f08b5459ea11bdca25de05') }
+---
+shards
+[
+  {
+    _id: 'rs2',
+    host: 'rs2/localhost:27020,localhost:27021',
+    state: 1,
+    topologyTime: Timestamp({ t: 1710263503, i: 1 })
+  }
+]
+---
+active mongoses
+[ { '6.0.13': 1 } ]
+---
+autosplit
+{ 'Currently enabled': 'yes' }
+---
+balancer
+{
+  'Currently enabled': 'yes',
+  'Failed balancer rounds in last 5 attempts': 0,
+  'Currently running': 'no',
+  'Migration Results for the last 24 hours': 'No recent migrations'
+}
+---
+databases
+[
+  {
+    database: { _id: 'config', primary: 'config', partitioned: true },
+    collections: {
+      'config.system.sessions': {
+        shardKey: { _id: 1 },
+        unique: false,
+        balancing: true,
+        chunkMetadata: [ { shard: 'rs2', nChunks: 1024 } ],
+        chunks: [
+          'too many chunks to print, use verbose if you want to force print'
+        ],
+        tags: []
+      }
+    }
+  }
+]
+[direct: mongos] test>
+
+
+
+
+[direct: mongos] test> sh.addShard("rs3/localhost:27022,localhost:27023")
+{
+  shardAdded: 'rs3',
+  ok: 1,
+  '$clusterTime': {
+    clusterTime: Timestamp({ t: 1710263651, i: 3 }),
+    signature: {
+      hash: Binary.createFromBase64('AAAAAAAAAAAAAAAAAAAAAAAAAAA=', 0),
+      keyId: Long('0')
+    }
+  },
+  operationTime: Timestamp({ t: 1710263651, i: 3 })
+}
+[direct: mongos] test> sh.status()
+shardingVersion
+{ _id: 1, clusterId: ObjectId('65f08b5459ea11bdca25de05') }
+---
+shards
+[
+  {
+    _id: 'rs2',
+    host: 'rs2/localhost:27020,localhost:27021',
+    state: 1,
+    topologyTime: Timestamp({ t: 1710263503, i: 1 })
+  },
+  {
+    _id: 'rs3',
+    host: 'rs3/localhost:27022,localhost:27023',
+    state: 1,
+    topologyTime: Timestamp({ t: 1710263651, i: 1 })
+  }
+]
+---
+active mongoses
+[ { '6.0.13': 1 } ]
+---
+autosplit
+{ 'Currently enabled': 'yes' }
+---
+balancer
+{
+  'Currently enabled': 'yes',
+  'Currently running': 'no',
+  'Failed balancer rounds in last 5 attempts': 0,
+  'Migration Results for the last 24 hours': 'No recent migrations'
+}
+---
+databases
+[
+  {
+    database: { _id: 'config', primary: 'config', partitioned: true },
+    collections: {
+      'config.system.sessions': {
+        shardKey: { _id: 1 },
+        unique: false,
+        balancing: true,
+        chunkMetadata: [ { shard: 'rs2', nChunks: 1024 } ],
+        chunks: [
+          'too many chunks to print, use verbose if you want to force print'
+        ],
+        tags: []
+      }
+    }
+  }
+]
+[direct: mongos] test>
+
+
+
+
+
+
+
+
+[direct: mongos] test> use prachi
+switched to db prachi
+[direct: mongos] prachi> sh.enableSharding("prachi")
+{
+  ok: 1,
+  '$clusterTime': {
+    clusterTime: Timestamp({ t: 1710263766, i: 7 }),
+    signature: {
+      hash: Binary.createFromBase64('AAAAAAAAAAAAAAAAAAAAAAAAAAA=', 0),
+      keyId: Long('0')
+    }
+  },
+  operationTime: Timestamp({ t: 1710263766, i: 4 })
+}
+[direct: mongos] prachi> sh.status()
+shardingVersion
+{ _id: 1, clusterId: ObjectId('65f08b5459ea11bdca25de05') }
+---
+shards
+[
+  {
+    _id: 'rs2',
+    host: 'rs2/localhost:27020,localhost:27021',
+    state: 1,
+    topologyTime: Timestamp({ t: 1710263503, i: 1 })
+  },
+  {
+    _id: 'rs3',
+    host: 'rs3/localhost:27022,localhost:27023',
+    state: 1,
+    topologyTime: Timestamp({ t: 1710263651, i: 1 })
+  }
+]
+---
+active mongoses
+[ { '6.0.13': 1 } ]
+---
+autosplit
+{ 'Currently enabled': 'yes' }
+---
+balancer
+{
+  'Currently running': 'no',
+  'Currently enabled': 'yes',
+  'Failed balancer rounds in last 5 attempts': 0,
+  'Migration Results for the last 24 hours': 'No recent migrations'
+}
+---
+databases
+[
+  {
+    database: { _id: 'config', primary: 'config', partitioned: true },
+    collections: {
+      'config.system.sessions': {
+        shardKey: { _id: 1 },
+        unique: false,
+        balancing: true,
+        chunkMetadata: [ { shard: 'rs2', nChunks: 1024 } ],
+        chunks: [
+          'too many chunks to print, use verbose if you want to force print'
+        ],
+        tags: []
+      }
+    }
+  },
+  {
+    database: {
+      _id: 'prachi',
+      primary: 'rs3',
+      partitioned: false,
+      version: {
+        uuid: UUID('69d1cd2b-285e-4eb1-bc18-c0355d714e2b'),
+        timestamp: Timestamp({ t: 1710263766, i: 2 }),
+        lastMod: 1
+      }
+    },
+    collections: {}
+  }
+]
+
+
+
+
+[direct: mongos] prachi> db.prac.createIndex({pincode:1})
+pincode_1
+[direct: mongos] prachi> sh.shardCollection("prachi.prac",{pincode:1})
+{
+  collectionsharded: 'prachi.prac',
+  ok: 1,
+  '$clusterTime': {
+    clusterTime: Timestamp({ t: 1710263959, i: 32 }),
+    signature: {
+      hash: Binary.createFromBase64('AAAAAAAAAAAAAAAAAAAAAAAAAAA=', 0),
+      keyId: Long('0')
+    }
+  },
+  operationTime: Timestamp({ t: 1710263959, i: 28 })
+}
+[direct: mongos] prachi> sh.status()
+shardingVersion
+{ _id: 1, clusterId: ObjectId('65f08b5459ea11bdca25de05') }
+---
+shards
+[
+  {
+    _id: 'rs2',
+    host: 'rs2/localhost:27020,localhost:27021',
+    state: 1,
+    topologyTime: Timestamp({ t: 1710263503, i: 1 })
+  },
+  {
+    _id: 'rs3',
+    host: 'rs3/localhost:27022,localhost:27023',
+    state: 1,
+    topologyTime: Timestamp({ t: 1710263651, i: 1 })
+  }
+]
+---
+active mongoses
+[ { '6.0.13': 1 } ]
+---
+autosplit
+{ 'Currently enabled': 'yes' }
+---
+balancer
+{
+  'Currently enabled': 'yes',
+  'Currently running': 'no',
+  'Failed balancer rounds in last 5 attempts': 0,
+  'Migration Results for the last 24 hours': 'No recent migrations'
+}
+---
+databases
+[
+  {
+    database: { _id: 'config', primary: 'config', partitioned: true },
+    collections: {
+      'config.system.sessions': {
+        shardKey: { _id: 1 },
+        unique: false,
+        balancing: true,
+        chunkMetadata: [ { shard: 'rs2', nChunks: 1024 } ],
+        chunks: [
+          'too many chunks to print, use verbose if you want to force print'
+        ],
+        tags: []
+      }
+    }
+  },
+  {
+    database: {
+      _id: 'prachi',
+      primary: 'rs3',
+      partitioned: false,
+      version: {
+        uuid: UUID('69d1cd2b-285e-4eb1-bc18-c0355d714e2b'),
+        timestamp: Timestamp({ t: 1710263766, i: 2 }),
+        lastMod: 1
+      }
+    },
+    collections: {
+      'prachi.prac': {
+        shardKey: { pincode: 1 },
+        unique: false,
+        balancing: true,
+        chunkMetadata: [ { shard: 'rs3', nChunks: 1 } ],
+        chunks: [
+          { min: { pincode: MinKey() }, max: { pincode: MaxKey() }, 'on shard': 'rs3', 'last modified': Timestamp({ t: 1, i: 0 }) }
+        ],
+        tags: []
+      }
+    }
+  }
+]
+[direct: mongos] prachi> sh.s
+sh.shardCollection   sh.status            sh.splitAt           sh.splitFind         sh.startBalancer     sh.stopBalancer      sh.setBalancerState
+
+[direct: mongos] prachi> sh.splitAt("prachi.prac",{pincode:600000})
+{
+  ok: 1,
+  '$clusterTime': {
+    clusterTime: Timestamp({ t: 1710264084, i: 5 }),
+    signature: {
+      hash: Binary.createFromBase64('AAAAAAAAAAAAAAAAAAAAAAAAAAA=', 0),
+      keyId: Long('0')
+    }
+  },
+  operationTime: Timestamp({ t: 1710264084, i: 5 })
+}
+[direct: mongos] prachi> sh.status()
+shardingVersion
+{ _id: 1, clusterId: ObjectId('65f08b5459ea11bdca25de05') }
+---
+shards
+[
+  {
+    _id: 'rs2',
+    host: 'rs2/localhost:27020,localhost:27021',
+    state: 1,
+    topologyTime: Timestamp({ t: 1710263503, i: 1 })
+  },
+  {
+    _id: 'rs3',
+    host: 'rs3/localhost:27022,localhost:27023',
+    state: 1,
+    topologyTime: Timestamp({ t: 1710263651, i: 1 })
+  }
+]
+---
+active mongoses
+[ { '6.0.13': 1 } ]
+---
+autosplit
+{ 'Currently enabled': 'yes' }
+---
+balancer
+{
+  'Currently enabled': 'yes',
+  'Currently running': 'no',
+  'Failed balancer rounds in last 5 attempts': 0,
+  'Migration Results for the last 24 hours': 'No recent migrations'
+}
+---
+databases
+[
+  {
+    database: { _id: 'config', primary: 'config', partitioned: true },
+    collections: {
+      'config.system.sessions': {
+        shardKey: { _id: 1 },
+        unique: false,
+        balancing: true,
+        chunkMetadata: [ { shard: 'rs2', nChunks: 1024 } ],
+        chunks: [
+          'too many chunks to print, use verbose if you want to force print'
+        ],
+        tags: []
+      }
+    }
+  },
+  {
+    database: {
+      _id: 'prachi',
+      primary: 'rs3',
+      partitioned: false,
+      version: {
+        uuid: UUID('69d1cd2b-285e-4eb1-bc18-c0355d714e2b'),
+        timestamp: Timestamp({ t: 1710263766, i: 2 }),
+        lastMod: 1
+      }
+    },
+    collections: {
+      'prachi.prac': {
+        shardKey: { pincode: 1 },
+        unique: false,
+        balancing: true,
+        chunkMetadata: [ { shard: 'rs3', nChunks: 2 } ],
+        chunks: [
+          { min: { pincode: MinKey() }, max: { pincode: 600000 }, 'on shard': 'rs3', 'last modified': Timestamp({ t: 1, i: 1 }) },
+          { min: { pincode: 600000 }, max: { pincode: MaxKey() }, 'on shard': 'rs3', 'last modified': Timestamp({ t: 1, i: 2 }) }
+        ],
+        tags: []
+      }
+    }
+  }
+]
+[direct: mongos] prachi>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+[direct: mongos] prachi> sh.splitAt("prachi.prac",{pincode:600000})
+{
+  ok: 1,
+  '$clusterTime': {
+    clusterTime: Timestamp({ t: 1710264084, i: 5 }),
+    signature: {
+      hash: Binary.createFromBase64('AAAAAAAAAAAAAAAAAAAAAAAAAAA=', 0),
+      keyId: Long('0')
+    }
+  },
+  operationTime: Timestamp({ t: 1710264084, i: 5 })
+}
+[direct: mongos] prachi> sh.status()
+shardingVersion
+{ _id: 1, clusterId: ObjectId('65f08b5459ea11bdca25de05') }
+---
+shards
+[
+  {
+    _id: 'rs2',
+    host: 'rs2/localhost:27020,localhost:27021',
+    state: 1,
+    topologyTime: Timestamp({ t: 1710263503, i: 1 })
+  },
+  {
+    _id: 'rs3',
+    host: 'rs3/localhost:27022,localhost:27023',
+    state: 1,
+    topologyTime: Timestamp({ t: 1710263651, i: 1 })
+  }
+]
+---
+active mongoses
+[ { '6.0.13': 1 } ]
+---
+autosplit
+{ 'Currently enabled': 'yes' }
+---
+balancer
+{
+  'Currently enabled': 'yes',
+  'Currently running': 'no',
+  'Failed balancer rounds in last 5 attempts': 0,
+  'Migration Results for the last 24 hours': 'No recent migrations'
+}
+---
+databases
+[
+  {
+    database: { _id: 'config', primary: 'config', partitioned: true },
+    collections: {
+      'config.system.sessions': {
+        shardKey: { _id: 1 },
+        unique: false,
+        balancing: true,
+        chunkMetadata: [ { shard: 'rs2', nChunks: 1024 } ],
+        chunks: [
+          'too many chunks to print, use verbose if you want to force print'
+        ],
+        tags: []
+      }
+    }
+  },
+  {
+    database: {
+      _id: 'prachi',
+      primary: 'rs3',
+      partitioned: false,
+      version: {
+        uuid: UUID('69d1cd2b-285e-4eb1-bc18-c0355d714e2b'),
+        timestamp: Timestamp({ t: 1710263766, i: 2 }),
+        lastMod: 1
+      }
+    },
+    collections: {
+      'prachi.prac': {
+        shardKey: { pincode: 1 },
+        unique: false,
+        balancing: true,
+        chunkMetadata: [ { shard: 'rs3', nChunks: 2 } ],
+        chunks: [
+          { min: { pincode: MinKey() }, max: { pincode: 600000 }, 'on shard': 'rs3', 'last modified': Timestamp({ t: 1, i: 1 }) },
+          { min: { pincode: 600000 }, max: { pincode: MaxKey() }, 'on shard': 'rs3', 'last modified': Timestamp({ t: 1, i: 2 }) }
+        ],
+        tags: []
+      }
+    }
+  }
+]
