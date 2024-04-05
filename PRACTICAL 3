@@ -1,0 +1,77 @@
+Name:VAIBHAVI PATIL
+Roll NO : 23
+Practical 3: CRUD using MongoDB
+
+CREATING NEW DATABASE:
+test> use userdb;
+switched to db userdb
+CREATING A NEW COLLECTION:
+userdb> db.createCollec􀆟on("users");
+{ ok: 1 }
+CREATE OPERATION INSERTONE ()
+userdb> db.createCollec􀆟on('user')
+{ ok: 1 }
+userdb> db.user.insertOne({name:"Prachi",age:21});
+{
+acknowledged: true,
+insertedId: ObjectId('65e2a287da1b709cadf5b3b2')
+}
+INSERTMANY ()
+userdb>
+db.user.insertMany([{name:'vaibhavi',age:21},{name:'Priya',age:26},{namename:"Rohan",age:3
+0}]);
+{
+acknowledged: true,
+insertedIds: {
+'0': ObjectId('65e2a2b1da1b709cadf5b3b3'),
+'1': ObjectId('65e2a2b1da1b709cadf5b3b4'),
+'2': ObjectId('65e2a2b1da1b709cadf5b3b5')
+}
+}
+READ OPERATIONS
+FIND ()
+userdb> db.user.find();
+[
+{
+_id: ObjectId('65e2a287da1b709cadf5b3b2'),
+name: '',
+age: 21
+},
+{ _id: ObjectId('65e2a2b1da1b709cadf5b3b3'), name: 'vaibhavi', age: 21 },
+{ _id: ObjectId('65e2a2b1da1b709cadf5b3b4'), name: 'Priya', age: 26 },
+{ _id: ObjectId('65e2a2b1da1b709cadf5b3b5'), name: 'Rohan', age: 30 }
+]
+FINDONE ()
+userdb> db.users.findOne({name:'Priya'});
+{ _id: ObjectId('65d8ca55f8488ab9d8445854'), name: 'Priya', age: 26 }
+UPDATE OPERATION
+UPDATEONE ()
+userdb> db.user.updateOne({name:"Prachi"},{$set:{name:"Arpita"}})
+{
+acknowledged: true,
+insertedId: null,
+matchedCount: 0,
+modifiedCount: 0,
+upsertedCount: 0
+}
+userdb>
+UPDATEMANY ()
+userdb> db.user.updateMany({age:{$lt:30}},{$set:{status:"ac􀆟ve"}});
+{
+acknowledged: true,
+insertedId: null,
+matchedCount: 3,
+modifiedCount: 3,
+upsertedCount: 0
+}
+DELETE OPERATOINS
+userdb> db.user.deleteOne({name:'Prachi'})
+{ acknowledged: true, deletedCount: 1 }
+DELETEMANY()
+userdb> db.user.deleteMany({age:{$lt:25}})
+{ acknowledged: true, deletedCount: 1 }
+DROP()
+userdb> db.user.drop()
+true
+userdb>
+
