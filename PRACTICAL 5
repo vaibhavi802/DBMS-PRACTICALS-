@@ -11,7 +11,7 @@ Copyright (C) Microsoft Corporation. All rights reserved.
 
 Install the latest PowerShell for new features and improvements! https://aka.ms/PSWindows
 
-PS C:\Users\Prachi Mistry> mongosh --port 27017
+PS C:\Users\vaibhavi patil> mongosh --port 27017
 Current Mongosh Log ID: 65f08255511cdfc9028e2e29
 Connecting to:          mongodb://127.0.0.1:27017/?directConnection=true&serverSelectionTimeoutMS=2000&appName=mongosh+2.1.4
 Using MongoDB:          6.0.13
