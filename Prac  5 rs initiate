@@ -1,0 +1,72 @@
+ .create a folder and in that folder make 9 files/folders with name(primary, secondry1, secondry2, server1, server2, server3, shard1, shard2, shard3) and run the commands mentioned below
+
+replication
+open cmd and run commands
+cd (path in which you created your folder)
+e.g(cd C:\Users\RESHMA KEESARI\OneDrive\Desktop\Pract5)
+
+start mongod --port=50000 --replSet="Server1" --dbpath="(folder path)/primary"
+e.g(start mongod --port=50000 --replSet="Server1" --dbpath="C:/Users/RESHMA KEESARI/OneDrive/Desktop/Pract5/primary"
+)
+"MAKE SURE TO CHANGE PATH"
+
+start mongod --port=50001 --replSet="Server1" --dbpath="(folder path)/secondry1"
+
+start mongod --port=50002 --replSet="Server1" --dbpath="(folder path)/secondry2"
+
+open cmd and run 
+mongosh --port=50000
+
+rs.initiate({
+    _id:"Server1",
+    members:[
+        {_id:0, host:"localhost:50000"},
+        {_id:1, host:"localhost:50001"},
+        {_id:2, host:"localhost:50002"}
+    ]
+});
+
+config server
+open cmd and run commands
+cd (path in which you created your folder)
+
+mongod --configsvr --port=1030 --replSet="Server1" --dbpath="(folder path)/server1"
+
+mongod --configsvr --port=1040 --replSet="Server1" --dbpath="(folder path)/server2"
+
+mongod --configsvr --port=1050 --replSet="Server1" --dbpath="(folder path)/server3"
+
+open cmd and run 
+mongosh --host="localhost:1030"
+
+rs.initiate({
+    _id:"Server1",
+    configsvr:true,
+    members:[
+        {_id:0, host:"localhost:1030"},
+        {_id:1, host:"localhost:1040"},
+        {_id:2, host:"localhost:1050"}
+    ]
+})
+
+shards
+open cmd and run commands
+cd (path in which you created your folder)
+
+mongod --shardsvr --port=1130 --dbpath="(folder path)/shard1" --replSet="Server1"
+
+mongod --shardsvr --port=1140 --dbpath="(folder path)/shard2" --replSet="Server1"
+
+mongod --shardsvr --port=1150 --dbpath="(folder path)/shard3" --replSet="Server1"
+
+open cmd and run 
+mongosh --host="localhost:1130"
+
+rs.initiate({
+    _id:"Server1",
+    members: [
+        {_id: 0, host: "localhost:1130"},
+        {_id: 1, host: "localhost:1140"},
+        {_id: 2, host: "localhost:1150"}
+    ]
+})
